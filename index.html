@@ -53,21 +53,35 @@
       #messages > li:nth-child(odd) {
         background: #efefef;
       }
+      div.wrapper {
+        display: flex;
+      }
+      .child {
+        flex: 1;
+      }
     </style>
   </head>
   <body>
-    <ul id="messages"></ul>
+    <div class="wrapper">
+      <ul class="child" id="messages"></ul>
+      <ul class="child" id="onlineUsers"></ul>
+    </div>
     <form id="form" action="">
       <input id="input" autocomplete="off" /><button>Send</button>
+      <button onClick="logout()">Logout</button>
     </form>
     <script src="/socket.io/socket.io.js"></script>
 
     <script>
       var socket = io()
 
+      const username = 'cute-fox'
       var messages = document.getElementById('messages')
       var form = document.getElementById('form')
       var input = document.getElementById('input')
+      var onlineUsers = document.getElementById('onlineUsers')
+
+      socket.emit('hello', username)
 
       form.addEventListener('submit', function (e) {
         e.preventDefault()
@@ -77,11 +91,29 @@
         }
       })
 
+      function logout() {
+        socket.emit('bye', username)
+        console.log('bye emitted')
+        window.open('', '_self', '')
+        window.close()
+      }
+
       socket.on('chat message', function (msg) {
         var item = document.createElement('li')
         item.textContent = msg
         messages.appendChild(item)
         window.scrollTo(0, document.body.scrollHeight)
+      })
+
+      socket.on('hello', function (usernameArr) {
+        onlineUsers.innerHTML = ''
+        console.log('removed children')
+
+        usernameArr.forEach((username) => {
+          var item = document.createElement('li')
+          item.textContent = username
+          onlineUsers.appendChild(item)
+        })
       })
     </script>
   </body>
