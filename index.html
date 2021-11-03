@@ -59,12 +59,24 @@
       .child {
         flex: 1;
       }
+      img {
+        border-radius: 50%;
+        display: inline;
+        float: left;
+      }
+      .message {
+        padding: 10px;
+        top: 50%;
+      }
     </style>
   </head>
   <body>
     <div class="wrapper">
       <ul class="child" id="messages"></ul>
-      <ul class="child" id="onlineUsers"></ul>
+      <div class="child">
+        <h2>Online Users</h2>
+        <ul class="child" id="onlineUsers"></ul>
+      </div>
     </div>
     <form id="form" action="">
       <input id="input" autocomplete="off" /><button>Send</button>
@@ -93,21 +105,44 @@
 
       function logout() {
         socket.emit('bye', username)
-        console.log('bye emitted')
-        window.open('', '_self', '')
         window.close()
       }
 
-      socket.on('chat message', function (msg) {
-        var item = document.createElement('li')
-        item.textContent = msg
-        messages.appendChild(item)
+      socket.on('chat message', function (obj) {
+        const avatarUrl = obj.avatarUrl
+        const username = obj.username
+        const msg = obj.msg
+
+        const div = document.createElement('div')
+        div.className = 'message'
+
+        const content = document.createElement('li')
+        content.textContent = username + ': ' + msg
+
+        const avatar = document.createElement('img')
+        avatar.src = avatarUrl
+        avatar.width = 50
+        avatar.height = 50
+
+        const timeStamp = document.createElement('p')
+        const today = new Date()
+        timeStamp.textContent =
+          'At: ' +
+          today.getHours() +
+          ':' +
+          today.getMinutes() +
+          ':' +
+          today.getSeconds()
+
+        div.appendChild(avatar)
+        div.appendChild(content)
+        div.appendChild(timeStamp)
+        messages.appendChild(div)
         window.scrollTo(0, document.body.scrollHeight)
       })
 
       socket.on('hello', function (usernameArr) {
         onlineUsers.innerHTML = ''
-        console.log('removed children')
 
         usernameArr.forEach((username) => {
           var item = document.createElement('li')
